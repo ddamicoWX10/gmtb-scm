@@ -281,6 +281,36 @@ begin
   u_g@units     = "m s^-1"
   v_g@unit      = "m s^-1"
 
+; Advection of air temperature is given in the GABLS3 data, which can
+; be converted to horizontal tendency of thetail. Values are given
+; between 200-1000m, decreasing to zero towards the surface and 
+; decreasing again to zero from 1000-1500m, zero entirely above.
+; Interpolation is needed in time and height.
+  T_advec_spec = (/ -2.5e-5, 7.5e-5,   0., 0.   /)
+  T_advec_time = (/       0,  46800,64800,86400 /)
+  T_advec      = linint1(T_advec_time,T_advec_spec,False,time,0)
+  
+; Interpolate with height
+  h_advec_T   = new((/ dimsizes(levels),dimsizes(time) /),float)
+  T_advec_h   = (/ 0., 200., 1000., 1500., 50000. /)
+  T_advec_int = new((/ dimsizes(T_advec_h),dimsizes(time) /),float)
+  
+  do i=0,dimsizes(time)-1,1
+    T_advec_int(:,i) = (/ 0.,T_advec(i),T_advec(i),0.,0. /)
+    h_advec_T(:,i)   = linint1(T_advec_h,T_advec_int(:,i),False,height,0)
+  end do
+  
+; Convert from air temperature to theta (which will eqaul thetail
+; because qi and ql are both zero)
+  h_advec_thetail = new((/ dimsizes(levels),dimsizes(time) /),float)
+  do i=0,dimsizes(levels)-1,1
+    h_advec_thetail(i,:) = h_advec_T(i,:) * ((P0 / levels(i)) ^ \
+                                            (kappa))
+  end do
+  h_advec_thetail@long_name = "prescribed theta_il tendency due to "+ \
+                              "horizontal advection"
+  h_advec_thetail@units     = "K s^-1"
+
 ; The last remaining variable given in the data that the gmtb-scm can 
 ; use is horizontal specific humidity tendency. The values are given 
 ; between 200-1000m, decreasing to zero down towards the surface and
@@ -360,12 +390,12 @@ begin
   dT_dt_rad@long_name = "prescribed radiative heating rate"
   dT_dt_rad@units     = "K s^-1"
 
-  h_advec_thetail           = new((/ dimsizes(levels),dimsizes(time) /), \
-                              float)
-  h_advec_thetail           = 0.
-  h_advec_thetail@long_name = "prescribed theta_il tendency due to " + \
-                              "horizontal advection"
-  h_advec_thetail@units     = "K s^-1"
+;  h_advec_thetail           = new((/ dimsizes(levels),dimsizes(time) /), \
+;                              float)
+;  h_advec_thetail           = 0.
+;  h_advec_thetail@long_name = "prescribed theta_il tendency due to " + \
+;                              "horizontal advection"
+;  h_advec_thetail@units     = "K s^-1"
 
   v_advec_thetail           = new((/ dimsizes(levels),dimsizes(time) /), \
                               float)
