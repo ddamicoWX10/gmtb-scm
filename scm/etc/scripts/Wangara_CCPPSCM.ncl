@@ -186,7 +186,9 @@ begin
 ; temperature and the viscosity of air, which can be difficult to solve for.
 ; Rather than using this formula, GLDAS can be utilized to estimate the surface
 ; skin layer temperature
-  gl_dir = "/glade/scratch/damico/GLDAS_Wangara/"
+  gl_dir = "/glade/work/damico/GLDAS_Wangara/" ; For those not using Cheyenne
+                                               ; please email 
+                                               ; [damico@ucar.edu] for data.
   gl_00  = addfile(gl_dir+"GLDAS_NOAH025_3H.A19670714.0000.020.nc4.SUB.nc4", \
                    "r")
 
